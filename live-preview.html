@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tata Punch.EV - Cyberpunk Live Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0A0E17;
+            --card-bg: #131B2A;
+            --card-border: #1E2C44;
+            --cyan-accent: #00F2FE;
+            --cyan-glow: rgba(0, 242, 254, 0.25);
+            --neon-green: #00E676;
+            --neon-green-glow: rgba(0, 230, 118, 0.25);
+            --neon-red: #FF3B30;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E9BAE;
+            --text-muted: #505F79;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .phone-shell {
+            width: 100%;
+            max-width: 412px;
+            background: #0D131F;
+            border: 2px solid var(--card-border);
+            border-radius: 40px;
+            padding: 24px 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Top Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .title-block h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+
+        .title-block .subtitle {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--cyan-accent);
+            letter-spacing: 1.5px;
+        }
+
+        .demo-badge {
+            background: rgba(0, 230, 118, 0.12);
+            color: var(--neon-green);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .demo-badge:hover {
+            background: rgba(0, 230, 118, 0.25);
+            transform: scale(1.04);
+        }
+
+        /* Status pill */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #182338;
+            border: 1px solid var(--card-border);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            box-shadow: 0 0 8px var(--neon-green);
+            transition: background 0.3s;
+        }
+
+        /* Center Hero Gauge */
+        .gauge-section {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            margin: 0 auto 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gauge-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-225deg);
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: #162032;
+            stroke-width: 14;
+            stroke-linecap: round;
+        }
+
+        .circle-bar {
+            fill: none;
+            stroke: url(#cyanGradient);
+            stroke-width: 14;
+            stroke-linecap: round;
+            stroke-dasharray: 565;
+            stroke-dashoffset: 140;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.6));
+        }
+
+        .gauge-center {
+            position: absolute;
+            text-align: center;
+        }
+
+        .soc-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .soc-number {
+            font-size: 54px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+            margin: 4px 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .soc-percent-sign {
+            font-size: 24px;
+            color: var(--cyan-accent);
+        }
+
+        .est-range {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--neon-green);
+            letter-spacing: 0.5px;
+        }
+
+        /* Bento Grid */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1.5px solid var(--card-border);
+            border-radius: 18px;
+            padding: 14px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 242, 254, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .card-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .card-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 6px 0 2px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .card-sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .accent-cyan {
+            color: var(--cyan-accent);
+        }
+
+        .accent-green {
+            color: var(--neon-green);
+        }
+
+        /* Bottom Action Button */
+        .connect-btn {
+            width: 100%;
+            height: 54px;
+            background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+            border: none;
+            border-radius: 16px;
+            color: #0A0E17;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.35);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .connect-btn:hover {
+            box-shadow: 0 14px 30px rgba(0, 242, 254, 0.5);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-shell">
+        <!-- Header -->
+        <div class="header">
+            <div class="title-block">
+                <h1>TATA PUNCH.EV</h1>
+                <div class="subtitle">ZIPTRON TELEMETRY GEN-2</div>
+            </div>
+            <button class="demo-badge" id="demoToggleBtn" onclick="toggleDemo()">DEMO: ON</button>
+        </div>
+
+        <!-- Connection Pill -->
+        <div class="status-pill">
+            <div class="dot" id="statusDot"></div>
+            <span id="statusText">SIMULATOR ACTIVE</span>
+        </div>
+
+        <!-- Hero Gauge -->
+        <div class="gauge-section">
+            <svg class="gauge-svg" viewBox="0 0 220 220">
+                <defs>
+                    <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00F2FE"/>
+                        <stop offset="100%" stop-color="#00E676"/>
+                    </linearGradient>
+                </defs>
+                <circle class="circle-bg" cx="110" cy="110" r="90" stroke-dasharray="565" stroke-dashoffset="141"></circle>
+                <circle class="circle-bar" id="gaugeArc" cx="110" cy="110" r="90"></circle>
+            </svg>
+
+            <div class="gauge-center">
+                <div class="soc-label">STATE OF CHARGE</div>
+                <div class="soc-number"><span id="valSoc">84</span><span class="soc-percent-sign">%</span></div>
+                <div class="est-range" id="valRange">EST. 227 KM</div>
+            </div>
+        </div>
+
+        <!-- Bento Grid Cards -->
+        <div class="bento-grid">
+            <div class="card">
+                <div class="card-label">Live Power</div>
+                <div class="card-value accent-cyan" id="valPower">18.4 kW</div>
+                <div class="card-sub" id="valPowerState" style="color: var(--cyan-accent);">DISCHARGING</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Pack Voltage</div>
+                <div class="card-value" id="valPackVolt">334.8 V</div>
+                <div class="card-sub" id="valPackAmp">-55.0 A</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Battery Temp</div>
+                <div class="card-value accent-green" id="valTemp">31 °C</div>
+                <div class="card-sub" id="valTempState" style="color: var(--neon-green);">OPTIMAL (COOLED)</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">12V Aux Battery</div>
+                <div class="card-value" id="valAux">12.8 V</div>
+                <div class="card-sub" style="color: var(--neon-green);">HEALTHY</div>
+            </div>
+        </div>
+
+        <!-- Connect Button -->
+        <button class="connect-btn" id="connectBtn" onclick="handleConnectClick()">
+            <span>⚡ Connect OBD-II</span>
+        </button>
+    </div>
+
+    <script>
+        let isDemo = true;
+        let simInterval = null;
+        let soc = 84;
+        let step = 0;
+
+        function updateGauge(percent) {
+            // Arc circumference is 2 * PI * 90 ≈ 565. 270 degree sweep = 424 max length
+            const maxSweep = 424;
+            const offset = 565 - (percent / 100) * maxSweep;
+            document.getElementById('gaugeArc').style.strokeDashoffset = offset;
+            document.getElementById('valSoc').innerText = Math.round(percent);
+            document.getElementById('valRange').innerText = `EST. ${Math.round(percent * 2.7)} KM`;
+        }
+
+        function runSimulation() {
+            step++;
+            // Alternate acceleration, cruising, and regen braking
+            const cycle = step % 12;
+            let current = 0;
+            let powerState = "IDLE";
+            let powerColor = "var(--text-secondary)";
+
+            if (cycle < 6) {
+                // Accelerating
+                current = -45 - (cycle * 8);
+                powerState = "ACCELERATING";
+                powerColor = "var(--cyan-accent)";
+            } else if (cycle < 9) {
+                // Regenerative braking
+                current = 28 + (cycle * 4);
+                powerState = "REGEN BRAKING";
+                powerColor = "var(--neon-green)";
+            } else {
+                // Coasting
+                current = -5;
+                powerState = "CRUISING";
+                powerColor = "var(--cyan-accent)";
+            }
+
+            const voltage = 332 + (current * 0.08);
+            const power = Math.abs((voltage * current) / 1000);
+
+            document.getElementById('valPower').innerText = `${power.toFixed(1)} kW`;
+            document.getElementById('valPower').style.color = powerColor;
+            document.getElementById('valPowerState').innerText = powerState;
+            document.getElementById('valPowerState').style.color = powerColor;
+
+            document.getElementById('valPackVolt').innerText = `${voltage.toFixed(1)} V`;
+            document.getElementById('valPackAmp').innerText = `${current > 0 ? '+' : ''}${current.toFixed(1)} A`;
+        }
+
+        function toggleDemo() {
+            isDemo = !isDemo;
+            const btn = document.getElementById('demoToggleBtn');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            if (isDemo) {
+                btn.innerText = "DEMO: ON";
+                statusDot.style.background = "var(--neon-green)";
+                statusText.innerText = "SIMULATOR ACTIVE";
+                simInterval = setInterval(runSimulation, 1000);
+            } else {
+                btn.innerText = "DEMO: OFF";
+                statusDot.style.background = "var(--neon-red)";
+                statusText.innerText = "DISCONNECTED";
+                clearInterval(simInterval);
+            }
+        }
+
+        async function handleConnectClick() {
+            if (navigator.bluetooth) {
+                try {
+                    alert("Scanning for Bluetooth OBD-II devices (ELM327 / Vgate iCar Pro)...");
+                    const device = await navigator.bluetooth.requestDevice({
+                        acceptAllDevices: true,
+                        optionalServices: ['00001101-0000-1000-8000-00805f9b34fb']
+                    });
+                    document.getElementById('statusText').innerText = `CONNECTED: ${device.name || 'OBD-II'}`;
+                    document.getElementById('statusDot').style.background = "var(--neon-green)";
+                } catch (err) {
+                    console.log("Bluetooth cancelled or not paired:", err);
+                }
+            } else {
+                alert("To connect to the live OBD in your car, install the Android APK created in your project folder!");
+            }
+        }
+
+        // Initialize gauge on load
+        updateGauge(84);
+        simInterval = setInterval(runSimulation, 1000);
+    </script>
+</body>
+</html>
+

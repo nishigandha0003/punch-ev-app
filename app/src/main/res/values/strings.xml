@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Punch.EV Live</string>
+    <string name="car_model">TATA PUNCH.EV</string>
+    <string name="vehicle_subtitle">ZIPTRON GEN-2 ARCHITECTURE</string>
+    <string name="status_disconnected">DISCONNECTED</string>
+    <string name="status_connecting">CONNECTING OBD...</string>
+    <string name="status_connected">LIVE TELEMETRY ACTIVE</string>
+    <string name="btn_connect">Connect OBD-II</string>
+    <string name="btn_disconnect">Disconnect</string>
+    <string name="mode_demo">DEMO MODE</string>
+</resources>
+
