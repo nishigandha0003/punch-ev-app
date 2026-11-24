@@ -14,6 +14,7 @@
             --cyan-glow: rgba(0, 242, 254, 0.25);
             --neon-green: #00E676;
             --neon-green-glow: rgba(0, 230, 118, 0.25);
+            --neon-amber: #FFB300;
             --neon-red: #FF3B30;
             --text-primary: #FFFFFF;
             --text-secondary: #8E9BAE;
@@ -26,6 +27,7 @@
             padding: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         body {
@@ -44,10 +46,13 @@
             background: #0D131F;
             border: 2px solid var(--card-border);
             border-radius: 40px;
-            padding: 24px 20px;
+            padding: 24px 20px 16px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.08);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 720px;
         }
 
         /* Top Header */
@@ -55,7 +60,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .title-block h1 {
@@ -89,36 +94,79 @@
             transform: scale(1.04);
         }
 
-        /* Status pill */
+        /* Status & Swipe Hint row */
+        .top-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
         .status-pill {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             background: #182338;
             border: 1px solid var(--card-border);
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 30px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.5px;
-            margin-bottom: 16px;
         }
 
         .dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--neon-green);
             box-shadow: 0 0 8px var(--neon-green);
             transition: background 0.3s;
         }
 
-        /* Center Hero Gauge */
+        .swipe-indicator {
+            font-size: 10px;
+            color: var(--cyan-accent);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0.85;
+        }
+
+        /* Carousel viewport for swiping */
+        .screens-viewport {
+            width: 100%;
+            overflow: hidden;
+            flex: 1;
+            cursor: grab;
+            position: relative;
+        }
+
+        .screens-viewport:active {
+            cursor: grabbing;
+        }
+
+        .screens-track {
+            display: flex;
+            width: 200%;
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .screen-page {
+            width: 50%;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* SCREEN 1: COCKPIT */
         .gauge-section {
             position: relative;
-            width: 250px;
-            height: 250px;
-            margin: 0 auto 16px;
+            width: 230px;
+            height: 230px;
+            margin: 0 auto 12px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -133,14 +181,14 @@
         .circle-bg {
             fill: none;
             stroke: #162032;
-            stroke-width: 14;
+            stroke-width: 13;
             stroke-linecap: round;
         }
 
         .circle-bar {
             fill: none;
             stroke: url(#cyanGradient);
-            stroke-width: 14;
+            stroke-width: 13;
             stroke-linecap: round;
             stroke-dasharray: 565;
             stroke-dashoffset: 140;
@@ -161,39 +209,38 @@
         }
 
         .soc-number {
-            font-size: 54px;
+            font-size: 52px;
             font-weight: 800;
             color: var(--text-primary);
             line-height: 1;
-            margin: 4px 0;
+            margin: 2px 0;
             font-family: 'JetBrains Mono', monospace;
         }
 
         .soc-percent-sign {
-            font-size: 24px;
+            font-size: 22px;
             color: var(--cyan-accent);
         }
 
         .est-range {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--neon-green);
             letter-spacing: 0.5px;
         }
 
-        /* Bento Grid */
         .bento-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 10px;
+            margin-bottom: 16px;
         }
 
         .card {
             background: var(--card-bg);
             border: 1.5px solid var(--card-border);
-            border-radius: 18px;
-            padding: 14px;
+            border-radius: 16px;
+            padding: 12px;
             position: relative;
             overflow: hidden;
             transition: transform 0.2s, border-color 0.2s;
@@ -201,11 +248,10 @@
 
         .card:hover {
             border-color: rgba(0, 242, 254, 0.4);
-            transform: translateY(-2px);
         }
 
         .card-label {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
             letter-spacing: 0.8px;
             color: var(--text-muted);
@@ -213,50 +259,185 @@
         }
 
         .card-value {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
             color: var(--text-primary);
-            margin: 6px 0 2px;
+            margin: 4px 0 2px;
             font-family: 'JetBrains Mono', monospace;
         }
 
         .card-sub {
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--text-secondary);
             font-weight: 600;
         }
 
-        .accent-cyan {
-            color: var(--cyan-accent);
+        .accent-cyan { color: var(--cyan-accent); }
+        .accent-green { color: var(--neon-green); }
+
+        /* SCREEN 2: CELL DOCTOR & HEALTH */
+        .health-hero {
+            background: linear-gradient(135deg, rgba(0, 230, 118, 0.08) 0%, rgba(0, 242, 254, 0.05) 100%);
+            border: 1.5px solid rgba(0, 230, 118, 0.3);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
         }
 
-        .accent-green {
+        .health-hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .delta-value-box {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .delta-num {
+            font-size: 38px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
             color: var(--neon-green);
+            line-height: 1;
         }
 
-        /* Bottom Action Button */
+        .delta-unit {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .delta-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #162032;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+            position: relative;
+        }
+
+        .delta-bar-fill {
+            height: 100%;
+            width: 18%;
+            background: linear-gradient(90deg, #00E676, #00F2FE);
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        /* Cell Matrix Grid */
+        .cell-matrix-box {
+            background: var(--card-bg);
+            border: 1.5px solid var(--card-border);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .matrix-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .matrix-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .cells-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 3px;
+            margin-bottom: 8px;
+        }
+
+        .cell-dot {
+            width: 100%;
+            height: 8px;
+            background: #00E676;
+            border-radius: 2px;
+            opacity: 0.85;
+            transition: background 0.3s;
+        }
+
+        .cell-dot.weak {
+            background: var(--cyan-accent);
+        }
+
+        .cell-legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Bottom Tab Navigation Switcher */
+        .nav-tabs {
+            display: flex;
+            background: #141D2D;
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 4px;
+            margin-bottom: 12px;
+            gap: 4px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.1));
+            color: var(--cyan-accent);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.15);
+        }
+
+        /* Bottom Connect Button */
         .connect-btn {
             width: 100%;
-            height: 54px;
+            height: 50px;
             background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
             border: none;
             border-radius: 16px;
             color: #0A0E17;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
             cursor: pointer;
-            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.35);
+            box-shadow: 0 8px 20px rgba(0, 242, 254, 0.3);
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .connect-btn:hover {
-            box-shadow: 0 14px 30px rgba(0, 242, 254, 0.5);
+            box-shadow: 0 12px 25px rgba(0, 242, 254, 0.45);
             transform: translateY(-2px);
         }
     </style>
@@ -264,7 +445,7 @@
 <body>
 
     <div class="phone-shell">
-        <!-- Header -->
+        <!-- Top Header -->
         <div class="header">
             <div class="title-block">
                 <h1>TATA PUNCH.EV</h1>
@@ -273,73 +454,229 @@
             <button class="demo-badge" id="demoToggleBtn" onclick="toggleDemo()">DEMO: ON</button>
         </div>
 
-        <!-- Connection Pill -->
-        <div class="status-pill">
-            <div class="dot" id="statusDot"></div>
-            <span id="statusText">SIMULATOR ACTIVE</span>
-        </div>
-
-        <!-- Hero Gauge -->
-        <div class="gauge-section">
-            <svg class="gauge-svg" viewBox="0 0 220 220">
-                <defs>
-                    <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#00F2FE"/>
-                        <stop offset="100%" stop-color="#00E676"/>
-                    </linearGradient>
-                </defs>
-                <circle class="circle-bg" cx="110" cy="110" r="90" stroke-dasharray="565" stroke-dashoffset="141"></circle>
-                <circle class="circle-bar" id="gaugeArc" cx="110" cy="110" r="90"></circle>
-            </svg>
-
-            <div class="gauge-center">
-                <div class="soc-label">STATE OF CHARGE</div>
-                <div class="soc-number"><span id="valSoc">84</span><span class="soc-percent-sign">%</span></div>
-                <div class="est-range" id="valRange">EST. 227 KM</div>
+        <!-- Meta status row -->
+        <div class="top-meta-row">
+            <div class="status-pill">
+                <div class="dot" id="statusDot"></div>
+                <span id="statusText">SIMULATOR ACTIVE</span>
+            </div>
+            <div class="swipe-indicator" id="swipeHint" onclick="switchTab(activeScreen === 0 ? 1 : 0)">
+                <span id="swipeHintText">SWIPE FOR CELL DOCTOR ➔</span>
             </div>
         </div>
 
-        <!-- Bento Grid Cards -->
-        <div class="bento-grid">
-            <div class="card">
-                <div class="card-label">Live Power</div>
-                <div class="card-value accent-cyan" id="valPower">18.4 kW</div>
-                <div class="card-sub" id="valPowerState" style="color: var(--cyan-accent);">DISCHARGING</div>
+        <!-- Navigation Tabs (Click or Swipe) -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" id="tab0" onclick="switchTab(0)">
+                <span>⚡ COCKPIT</span>
             </div>
-
-            <div class="card">
-                <div class="card-label">Pack Voltage</div>
-                <div class="card-value" id="valPackVolt">334.8 V</div>
-                <div class="card-sub" id="valPackAmp">-55.0 A</div>
-            </div>
-
-            <div class="card">
-                <div class="card-label">Battery Temp</div>
-                <div class="card-value accent-green" id="valTemp">31 °C</div>
-                <div class="card-sub" id="valTempState" style="color: var(--neon-green);">OPTIMAL (COOLED)</div>
-            </div>
-
-            <div class="card">
-                <div class="card-label">12V Aux Battery</div>
-                <div class="card-value" id="valAux">12.8 V</div>
-                <div class="card-sub" style="color: var(--neon-green);">HEALTHY</div>
+            <div class="nav-tab" id="tab1" onclick="switchTab(1)">
+                <span>🩺 CELL DOCTOR</span>
             </div>
         </div>
 
-        <!-- Connect Button -->
+        <!-- Swipeable Screen Viewport -->
+        <div class="screens-viewport" id="viewport">
+            <div class="screens-track" id="track">
+                
+                <!-- ================= SCREEN 1: COCKPIT ================= -->
+                <div class="screen-page" id="screen0">
+                    <!-- Hero Gauge -->
+                    <div class="gauge-section">
+                        <svg class="gauge-svg" viewBox="0 0 220 220">
+                            <defs>
+                                <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#00F2FE"/>
+                                    <stop offset="100%" stop-color="#00E676"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="circle-bg" cx="110" cy="110" r="90" stroke-dasharray="565" stroke-dashoffset="141"></circle>
+                            <circle class="circle-bar" id="gaugeArc" cx="110" cy="110" r="90"></circle>
+                        </svg>
+
+                        <div class="gauge-center">
+                            <div class="soc-label">STATE OF CHARGE</div>
+                            <div class="soc-number"><span id="valSoc">84</span><span class="soc-percent-sign">%</span></div>
+                            <div class="est-range" id="valRange">EST. 227 KM</div>
+                        </div>
+                    </div>
+
+                    <!-- Bento Grid Cards -->
+                    <div class="bento-grid">
+                        <div class="card">
+                            <div class="card-label">Live Power</div>
+                            <div class="card-value accent-cyan" id="valPower">18.4 kW</div>
+                            <div class="card-sub" id="valPowerState" style="color: var(--cyan-accent);">DISCHARGING</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">Pack Voltage</div>
+                            <div class="card-value" id="valPackVolt">334.8 V</div>
+                            <div class="card-sub" id="valPackAmp">-55.0 A</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">Battery Temp</div>
+                            <div class="card-value accent-green" id="valTemp">31 °C</div>
+                            <div class="card-sub" id="valTempState" style="color: var(--neon-green);">OPTIMAL (COOLED)</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">12V Aux Battery</div>
+                            <div class="card-value" id="valAux">12.8 V</div>
+                            <div class="card-sub" style="color: var(--neon-green);">HEALTHY</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= SCREEN 2: CELL DOCTOR & HEALTH ================= -->
+                <div class="screen-page" id="screen1">
+                    <!-- Hero Health Box: Cell Balance Delta -->
+                    <div class="health-hero">
+                        <div class="health-hero-top">
+                            <div>
+                                <div class="card-label">CELL BALANCE DELTA</div>
+                                <div class="delta-value-box">
+                                    <span class="delta-num" id="valDelta">14</span>
+                                    <span class="delta-unit">mV</span>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 11px; font-weight: 800; color: var(--neon-green);" id="valDeltaStatus">PERFECT BALANCE</div>
+                                <div style="font-size: 9px; color: var(--text-muted);">&lt; 25mV IS IDEAL</div>
+                            </div>
+                        </div>
+                        <div class="delta-bar-container">
+                            <div class="delta-bar-fill" id="deltaBar"></div>
+                        </div>
+                    </div>
+
+                    <!-- 96 Cell Live Balance Matrix -->
+                    <div class="cell-matrix-box">
+                        <div class="matrix-header">
+                            <span class="matrix-title">96-CELL VOLTAGE MATRIX</span>
+                            <span style="font-size: 10px; color: var(--neon-green); font-weight: 700;">ALL 96 BALANCED</span>
+                        </div>
+                        <div class="cells-mini-grid" id="cellsGrid">
+                            <!-- Populated with 96 cell dots via JS -->
+                        </div>
+                        <div class="cell-legend">
+                            <span>MIN: <strong id="valMinCell" style="color: var(--cyan-accent);">3.341 V (#18)</strong></span>
+                            <span>MAX: <strong id="valMaxCell" style="color: var(--neon-green);">3.355 V (#42)</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Battery Life & Degradation Stats -->
+                    <div class="bento-grid">
+                        <div class="card">
+                            <div class="card-label">State of Health (SOH)</div>
+                            <div class="card-value accent-green" id="valSoh">99.4%</div>
+                            <div class="card-sub">0.6% DEGRADATION</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">Total Charge Cycles</div>
+                            <div class="card-value" id="valCycles">42</div>
+                            <div class="card-sub">EST. 2000+ LFP LIFE</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">Chiller Pump</div>
+                            <div class="card-value accent-cyan" id="valPump">2,150</div>
+                            <div class="card-sub">RPM (LIQUID ACTIVE)</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">Energy Throughput</div>
+                            <div class="card-value">1,480</div>
+                            <div class="card-sub">TOTAL kWh CHARGED</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Bottom Action Button -->
         <button class="connect-btn" id="connectBtn" onclick="handleConnectClick()">
-            <span>⚡ Connect OBD-II</span>
+            <span>⚡ Connect OBD-II Adapter</span>
         </button>
     </div>
 
     <script>
         let isDemo = true;
         let simInterval = null;
-        let soc = 84;
+        let activeScreen = 0;
         let step = 0;
 
+        // Generate 96 visual cell dots
+        const grid = document.getElementById('cellsGrid');
+        for (let i = 0; i < 96; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'cell-dot';
+            dot.id = `cell-dot-${i}`;
+            grid.appendChild(dot);
+        }
+
+        // Tab Switching & Swiping Logic
+        function switchTab(index) {
+            activeScreen = index;
+            const track = document.getElementById('track');
+            const tab0 = document.getElementById('tab0');
+            const tab1 = document.getElementById('tab1');
+            const swipeHintText = document.getElementById('swipeHintText');
+
+            if (index === 0) {
+                track.style.transform = 'translateX(0%)';
+                tab0.classList.add('active');
+                tab1.classList.remove('active');
+                swipeHintText.innerText = 'SWIPE FOR CELL DOCTOR ➔';
+            } else {
+                track.style.transform = 'translateX(-50%)';
+                tab1.classList.add('active');
+                tab0.classList.remove('active');
+                swipeHintText.innerText = '⬅ SWIPE FOR COCKPIT';
+            }
+        }
+
+        // Touch & Mouse Drag Swiping
+        const viewport = document.getElementById('viewport');
+        let startX = 0;
+        let isDragging = false;
+
+        viewport.addEventListener('touchstart', e => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        }, { passive: true });
+
+        viewport.addEventListener('touchend', e => {
+            if (!isDragging) return;
+            const diffX = e.changedTouches[0].clientX - startX;
+            handleSwipe(diffX);
+            isDragging = false;
+        });
+
+        viewport.addEventListener('mousedown', e => {
+            startX = e.clientX;
+            isDragging = true;
+        });
+
+        viewport.addEventListener('mouseup', e => {
+            if (!isDragging) return;
+            const diffX = e.clientX - startX;
+            handleSwipe(diffX);
+            isDragging = false;
+        });
+
+        function handleSwipe(diffX) {
+            if (diffX < -50 && activeScreen === 0) {
+                switchTab(1); // Swipe left -> Screen 2
+            } else if (diffX > 50 && activeScreen === 1) {
+                switchTab(0); // Swipe right -> Screen 1
+            }
+        }
+
         function updateGauge(percent) {
-            // Arc circumference is 2 * PI * 90 ≈ 565. 270 degree sweep = 424 max length
             const maxSweep = 424;
             const offset = 565 - (percent / 100) * maxSweep;
             document.getElementById('gaugeArc').style.strokeDashoffset = offset;
@@ -349,24 +686,20 @@
 
         function runSimulation() {
             step++;
-            // Alternate acceleration, cruising, and regen braking
             const cycle = step % 12;
             let current = 0;
             let powerState = "IDLE";
             let powerColor = "var(--text-secondary)";
 
             if (cycle < 6) {
-                // Accelerating
                 current = -45 - (cycle * 8);
                 powerState = "ACCELERATING";
                 powerColor = "var(--cyan-accent)";
             } else if (cycle < 9) {
-                // Regenerative braking
                 current = 28 + (cycle * 4);
                 powerState = "REGEN BRAKING";
                 powerColor = "var(--neon-green)";
             } else {
-                // Coasting
                 current = -5;
                 powerState = "CRUISING";
                 powerColor = "var(--cyan-accent)";
@@ -375,13 +708,23 @@
             const voltage = 332 + (current * 0.08);
             const power = Math.abs((voltage * current) / 1000);
 
+            // Screen 1 updates
             document.getElementById('valPower').innerText = `${power.toFixed(1)} kW`;
             document.getElementById('valPower').style.color = powerColor;
             document.getElementById('valPowerState').innerText = powerState;
             document.getElementById('valPowerState').style.color = powerColor;
-
             document.getElementById('valPackVolt').innerText = `${voltage.toFixed(1)} V`;
             document.getElementById('valPackAmp').innerText = `${current > 0 ? '+' : ''}${current.toFixed(1)} A`;
+
+            // Screen 2 updates (Live cell balancing fluctuations)
+            const deltaMv = Math.round(12 + Math.sin(step) * 4);
+            document.getElementById('valDelta').innerText = deltaMv;
+            document.getElementById('deltaBar').style.width = `${Math.min(deltaMv * 2.5, 100)}%`;
+
+            const minCellV = (3.338 + Math.sin(step * 0.3) * 0.005).toFixed(3);
+            const maxCellV = (parseFloat(minCellV) + (deltaMv / 1000)).toFixed(3);
+            document.getElementById('valMinCell').innerText = `${minCellV} V (#18)`;
+            document.getElementById('valMaxCell').innerText = `${maxCellV} V (#42)`;
         }
 
         function toggleDemo() {
@@ -403,28 +746,13 @@
             }
         }
 
-        async function handleConnectClick() {
-            if (navigator.bluetooth) {
-                try {
-                    alert("Scanning for Bluetooth OBD-II devices (ELM327 / Vgate iCar Pro)...");
-                    const device = await navigator.bluetooth.requestDevice({
-                        acceptAllDevices: true,
-                        optionalServices: ['00001101-0000-1000-8000-00805f9b34fb']
-                    });
-                    document.getElementById('statusText').innerText = `CONNECTED: ${device.name || 'OBD-II'}`;
-                    document.getElementById('statusDot').style.background = "var(--neon-green)";
-                } catch (err) {
-                    console.log("Bluetooth cancelled or not paired:", err);
-                }
-            } else {
-                alert("To connect to the live OBD in your car, install the Android APK created in your project folder!");
-            }
+        function handleConnectClick() {
+            alert("To connect to the live OBD in your car, install the Android APK created in your project folder!");
         }
 
-        // Initialize gauge on load
+        // Initialize gauge and simulation
         updateGauge(84);
         simInterval = setInterval(runSimulation, 1000);
     </script>
 </body>
 </html>
-
