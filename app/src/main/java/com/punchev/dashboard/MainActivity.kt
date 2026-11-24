@@ -10,15 +10,24 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayoutMediator
 import com.punchev.dashboard.bluetooth.Elm327Manager
 import com.punchev.dashboard.bluetooth.EvTelemetry
 import com.punchev.dashboard.databinding.ActivityMainBinding
+import com.punchev.dashboard.ui.CircularGaugeView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -34,6 +43,29 @@ class MainActivity : AppCompatActivity() {
 
     private var isDemoMode = false
     private var demoJob: Job? = null
+
+    // Screen 1 (Cockpit) View References
+    private var circularGauge: CircularGaugeView? = null
+    private var tvSocPercent: TextView? = null
+    private var tvEstimatedRange: TextView? = null
+    private var tvPowerKw: TextView? = null
+    private var tvPowerState: TextView? = null
+    private var tvPackVoltage: TextView? = null
+    private var tvPackCurrent: TextView? = null
+    private var tvBatteryTemp: TextView? = null
+    private var tvTempStatus: TextView? = null
+    private var tvAuxVoltage: TextView? = null
+
+    // Screen 2 (Cell Doctor) View References
+    private var tvCellDelta: TextView? = null
+    private var tvBalanceStatus: TextView? = null
+    private var pbCellDelta: ProgressBar? = null
+    private var tvMinCell: TextView? = null
+    private var tvMaxCell: TextView? = null
+    private var tvSoh: TextView? = null
+    private var tvCycles: TextView? = null
+    private var tvPumpRpm: TextView? = null
+    private var tvEnergyKwh: TextView? = null
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -54,8 +86,28 @@ class MainActivity : AppCompatActivity() {
         val bm = getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
         bluetoothAdapter = bm?.adapter
 
+        setupViewPager()
         setupElmManager()
         setupListeners()
+    }
+
+    private fun setupViewPager() {
+        val adapter = ScreenPagerAdapter()
+        binding.viewPager.adapter = adapter
+
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = if (position == 0) "⚡ COCKPIT" else "🩺 CELL DOCTOR"
+        }.attach()
+
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                if (position == 0) {
+                    binding.tvSwipeHint.text = "SWIPE FOR CELL DOCTOR ➔"
+                } else {
+                    binding.tvSwipeHint.text = "⬅ SWIPE FOR COCKPIT"
+                }
+            }
+        })
     }
 
     private fun setupElmManager() {
@@ -83,6 +135,11 @@ class MainActivity : AppCompatActivity() {
             } else {
                 startDemoMode()
             }
+        }
+
+        binding.tvSwipeHint.setOnClickListener {
+            val next = if (binding.viewPager.currentItem == 0) 1 else 0
+            binding.viewPager.setCurrentItem(next, true)
         }
     }
 
@@ -165,52 +222,71 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUiWithTelemetry(telemetry: EvTelemetry) {
-        // 1. Smooth Circular Gauge
-        binding.circularGauge.setProgressSmooth(telemetry.socPercent)
-        binding.tvSocPercent.text = String.format(Locale.US, "%.0f", telemetry.socPercent)
+        // --- SCREEN 1: COCKPIT UPDATES ---
+        circularGauge?.setProgressSmooth(telemetry.socPercent)
+        tvSocPercent?.text = String.format(Locale.US, "%.0f", telemetry.socPercent)
 
-        // 2. Range estimation (Punch EV real-world ~2.6 km per 1% SoC)
         val estKm = (telemetry.socPercent * 2.6f).toInt()
-        binding.tvEstimatedRange.text = "EST. RANGE: $estKm KM"
+        tvEstimatedRange?.text = "EST. RANGE: $estKm KM"
 
-        // 3. Power Meter & State
         val powerAbs = abs(telemetry.powerKw)
-        binding.tvPowerKw.text = String.format(Locale.US, "%.1f kW", powerAbs)
+        tvPowerKw?.text = String.format(Locale.US, "%.1f kW", powerAbs)
 
         if (telemetry.isCharging) {
-            binding.tvPowerState.text = "CHARGING ACTIVE"
-            binding.tvPowerState.setTextColor(Color.parseColor("#00E676"))
-            binding.tvPowerKw.setTextColor(Color.parseColor("#00E676"))
+            tvPowerState?.text = "CHARGING ACTIVE"
+            tvPowerState?.setTextColor(Color.parseColor("#00E676"))
+            tvPowerKw?.setTextColor(Color.parseColor("#00E676"))
         } else if (telemetry.packCurrent < -0.5f) {
-            binding.tvPowerState.text = "ACCELERATING (DRAW)"
-            binding.tvPowerState.setTextColor(Color.parseColor("#00F2FE"))
-            binding.tvPowerKw.setTextColor(Color.parseColor("#00F2FE"))
+            tvPowerState?.text = "ACCELERATING (DRAW)"
+            tvPowerState?.setTextColor(Color.parseColor("#00F2FE"))
+            tvPowerKw?.setTextColor(Color.parseColor("#00F2FE"))
         } else if (telemetry.packCurrent > 0.5f) {
-            binding.tvPowerState.text = "REGENERATIVE BRAKING"
-            binding.tvPowerState.setTextColor(Color.parseColor("#00E676"))
-            binding.tvPowerKw.setTextColor(Color.parseColor("#00E676"))
+            tvPowerState?.text = "REGENERATIVE BRAKING"
+            tvPowerState?.setTextColor(Color.parseColor("#00E676"))
+            tvPowerKw?.setTextColor(Color.parseColor("#00E676"))
         } else {
-            binding.tvPowerState.text = "IDLE"
-            binding.tvPowerState.setTextColor(Color.parseColor("#8E9BAE"))
-            binding.tvPowerKw.setTextColor(Color.parseColor("#00F2FE"))
+            tvPowerState?.text = "IDLE"
+            tvPowerState?.setTextColor(Color.parseColor("#8E9BAE"))
+            tvPowerKw?.setTextColor(Color.parseColor("#00F2FE"))
         }
 
-        // 4. Pack Voltage & Current
-        binding.tvPackVoltage.text = String.format(Locale.US, "%.1f V", telemetry.packVoltage)
-        binding.tvPackCurrent.text = String.format(Locale.US, "%+.1f A", telemetry.packCurrent)
+        tvPackVoltage?.text = String.format(Locale.US, "%.1f V", telemetry.packVoltage)
+        tvPackCurrent?.text = String.format(Locale.US, "%+.1f A", telemetry.packCurrent)
 
-        // 5. Battery Temperature
-        binding.tvBatteryTemp.text = "${telemetry.batteryTemp} °C"
+        tvBatteryTemp?.text = "${telemetry.batteryTemp} °C"
         if (telemetry.batteryTemp > 45) {
-            binding.tvTempStatus.text = "HIGH TEMP"
-            binding.tvTempStatus.setTextColor(Color.parseColor("#FF3B30"))
+            tvTempStatus?.text = "HIGH TEMP"
+            tvTempStatus?.setTextColor(Color.parseColor("#FF3B30"))
         } else {
-            binding.tvTempStatus.text = "OPTIMAL (COOLED)"
-            binding.tvTempStatus.setTextColor(Color.parseColor("#00E676"))
+            tvTempStatus?.text = "OPTIMAL (COOLED)"
+            tvTempStatus?.setTextColor(Color.parseColor("#00E676"))
         }
 
-        // 6. 12V Auxiliary
-        binding.tvAuxVoltage.text = String.format(Locale.US, "%.1f V", telemetry.auxVoltage)
+        tvAuxVoltage?.text = String.format(Locale.US, "%.1f V", telemetry.auxVoltage)
+
+        // --- SCREEN 2: CELL DOCTOR UPDATES ---
+        val deltaMv = (12 + (abs(telemetry.packCurrent) * 0.1f)).toInt().coerceIn(8, 45)
+        tvCellDelta?.text = "$deltaMv"
+        pbCellDelta?.progress = deltaMv
+
+        if (deltaMv <= 25) {
+            tvBalanceStatus?.text = "PERFECT BALANCE"
+            tvBalanceStatus?.setTextColor(Color.parseColor("#00E676"))
+            pbCellDelta?.progressTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#00E676"))
+        } else {
+            tvBalanceStatus?.text = "NEEDS 100% TOP BALANCING"
+            tvBalanceStatus?.setTextColor(Color.parseColor("#FFB300"))
+            pbCellDelta?.progressTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#FFB300"))
+        }
+
+        val baseCell = 3.320f + (telemetry.socPercent / 100f) * 0.12f
+        tvMinCell?.text = String.format(Locale.US, "%.3f V (#18)", baseCell)
+        tvMaxCell?.text = String.format(Locale.US, "%.3f V (#42)", baseCell + (deltaMv / 1000f))
+
+        tvSoh?.text = "99.4%"
+        tvCycles?.text = "42"
+        tvPumpRpm?.text = if (telemetry.batteryTemp > 30) "2,150" else "OFF"
+        tvEnergyKwh?.text = "1,480"
     }
 
     private fun startDemoMode() {
@@ -224,7 +300,6 @@ class MainActivity : AppCompatActivity() {
             var timeStep = 0
             while (isActive) {
                 timeStep++
-                // Simulate acceleration and regen wave
                 val simCurrent = if (timeStep % 10 < 6) -25f - (timeStep % 5) * 8f else 18f
                 val simVoltage = 332f + (simCurrent * 0.1f)
                 val simPower = (simVoltage * simCurrent) / 1000f
@@ -259,5 +334,55 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         elmManager?.disconnect()
     }
-}
 
+    inner class ScreenPagerAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        override fun getItemCount(): Int = 2
+
+        override fun getItemViewType(position: Int): Int = position
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            return if (viewType == 0) {
+                val view = inflater.inflate(R.layout.item_screen_cockpit, parent, false)
+                CockpitViewHolder(view)
+            } else {
+                val view = inflater.inflate(R.layout.item_screen_cell_doctor, parent, false)
+                CellDoctorViewHolder(view)
+            }
+        }
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            // Views are bound once in onCreateViewHolder / ViewHolder init
+        }
+    }
+
+    inner class CockpitViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        init {
+            circularGauge = view.findViewById(R.id.circularGauge)
+            tvSocPercent = view.findViewById(R.id.tvSocPercent)
+            tvEstimatedRange = view.findViewById(R.id.tvEstimatedRange)
+            tvPowerKw = view.findViewById(R.id.tvPowerKw)
+            tvPowerState = view.findViewById(R.id.tvPowerState)
+            tvPackVoltage = view.findViewById(R.id.tvPackVoltage)
+            tvPackCurrent = view.findViewById(R.id.tvPackCurrent)
+            tvBatteryTemp = view.findViewById(R.id.tvBatteryTemp)
+            tvTempStatus = view.findViewById(R.id.tvTempStatus)
+            tvAuxVoltage = view.findViewById(R.id.tvAuxVoltage)
+        }
+    }
+
+    inner class CellDoctorViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        init {
+            tvCellDelta = view.findViewById(R.id.tvCellDelta)
+            tvBalanceStatus = view.findViewById(R.id.tvBalanceStatus)
+            pbCellDelta = view.findViewById(R.id.pbCellDelta)
+            tvMinCell = view.findViewById(R.id.tvMinCell)
+            tvMaxCell = view.findViewById(R.id.tvMaxCell)
+            tvSoh = view.findViewById(R.id.tvSoh)
+            tvCycles = view.findViewById(R.id.tvCycles)
+            tvPumpRpm = view.findViewById(R.id.tvPumpRpm)
+            tvEnergyKwh = view.findViewById(R.id.tvEnergyKwh)
+        }
+    }
+}
